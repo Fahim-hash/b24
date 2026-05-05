@@ -43,7 +43,7 @@ export default function RegistrationPage() {
       <div className="min-h-screen bg-[#020202] flex items-center justify-center p-6 text-center">
         <motion.div initial={{ scale: 0.9, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} className="space-y-4">
           <CheckCircle2 className="mx-auto text-[#ff005a]" size={64} />
-          <h1 className="text-3xl font-black uppercase tracking-tighter">Request Received!</h1>
+          <h1 className="text-3xl font-black uppercase tracking-tighter">Request received!</h1>
           <p className="text-gray-400 font-mono text-sm max-w-md">
             Your verification protocol is in progress. Once confirmed, your ticket will be transmitted to <strong>{formData.email}</strong>.
           </p>
