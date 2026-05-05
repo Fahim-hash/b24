@@ -8,7 +8,6 @@ import {
   ArrowRight, CheckCircle2 
 } from 'lucide-react';
 
-// --- DYNAMIC CONFIGURATION (Single Source of Truth) ---
 const EVENT_CONFIG = {
   eventName: "চব্বিশের Reunion (Squid Edition)",
   currentCategoryName: "Early Bird", 
@@ -23,21 +22,13 @@ const EVENT_CONFIG = {
   ]
 };
 
-// --- Framer Motion Variants (Fixed for TypeScript/Vercel) ---
 const fadeInUp = {
   hidden: { opacity: 0, y: 30 },
   visible: { 
     opacity: 1, 
     y: 0, 
-    transition: { 
-      duration: 0.8, 
-      ease: [0.16, 1, 0.3, 1] as any // Fixed the type error
-    } 
+    transition: { duration: 0.8, ease: [0.16, 1, 0.3, 1] as any } 
   }
-};
-
-const stagger = {
-  visible: { transition: { staggerChildren: 0.1 } }
 };
 
 export default function ReunionSquidEdition() {
@@ -61,89 +52,86 @@ export default function ReunionSquidEdition() {
   }, []);
 
   return (
-    <main className="bg-[#050505] min-h-screen text-white selection:bg-[#ff005a]/30 overflow-x-hidden">
-      
-      {/* 1. HERO SECTION */}
-      <section className="relative min-h-screen flex flex-col items-center justify-center pt-20 px-6 overflow-hidden">
-        <div className="absolute top-1/4 -left-20 w-[500px] h-[500px] bg-[#ff005a]/10 blur-[150px] rounded-full" />
-        <div className="absolute bottom-1/4 -right-20 w-[500px] h-[500px] bg-[#00f0ff]/5 blur-[150px] rounded-full" />
+    <main className="bg-[#0a0a0a] min-h-screen text-white selection:bg-[#ff1177]/40 overflow-x-hidden relative">
+      {/* Background Overlay: Grainy Texture & Large Symbols */}
+      <div className="fixed inset-0 bg-[url('https://grainy-gradients.vercel.app/noise.svg')] opacity-[0.03] pointer-events-none z-50" />
+      <div className="absolute top-0 left-0 w-full h-full overflow-hidden pointer-events-none opacity-5">
+        <div className="absolute -top-20 -left-20 text-[40rem] font-bold text-white">○</div>
+        <div className="absolute bottom-0 right-0 text-[30rem] font-bold text-[#ff1177]">△</div>
+      </div>
 
+      {/* 1. HERO SECTION */}
+      <section className="relative min-h-screen flex flex-col items-center justify-center pt-20 px-6">
         <motion.div 
-          initial="hidden" animate="visible" variants={stagger}
+          initial="hidden" animate="visible"
           className="container max-w-6xl mx-auto text-center z-10"
         >
-          <motion.div variants={fadeInUp} className="relative w-64 h-64 md:w-80 md:h-80 mx-auto mb-10 group">
-            <div className="absolute inset-0 bg-[#ff005a] blur-[60px] opacity-20 group-hover:opacity-40 transition-opacity duration-500" />
-            <div className="relative w-full h-full border border-white/10 rounded-2xl overflow-hidden backdrop-blur-sm p-4">
+          <motion.div variants={fadeInUp} className="relative w-72 h-72 md:w-96 md:h-96 mx-auto mb-10">
+            {/* Pink Glow Behind Image */}
+            <div className="absolute inset-0 bg-[#ff1177] blur-[100px] opacity-25 animate-pulse" />
+            <div className="relative w-full h-full border-4 border-[#ff1177] rounded-full overflow-hidden shadow-[0_0_50px_rgba(255,17,119,0.4)]">
               <Image 
                 src="/sq_re_2.jpg" 
                 alt="Squid Edition Logo" 
                 fill 
-                className="object-cover p-2 rounded-xl"
+                className="object-cover scale-110"
                 priority
               />
             </div>
+            {/* Squid Symbols */}
+            <div className="absolute -bottom-5 left-1/2 -translate-x-1/2 bg-[#ff1177] px-6 py-2 rounded-sm font-bold tracking-[1em] text-black">○△□</div>
           </motion.div>
 
-          <motion.h1 variants={fadeInUp} className="text-3xl md:text-6xl uppercase tracking-tighter mb-6 font-bold">
-            <span className="text-[#ff005a]">চব্বিশের</span> REUNION
+          <motion.h1 variants={fadeInUp} className="text-5xl md:text-8xl uppercase font-black tracking-tighter mb-4 italic">
+            <span className="text-transparent bg-clip-text bg-gradient-to-b from-white to-gray-500">চব্বিশের</span> <br />
+            <span className="text-[#ff1177] drop-shadow-[0_0_20px_rgba(255,17,119,0.8)]">REUNION</span>
           </motion.h1>
           
-          <motion.p variants={fadeInUp} className="text-gray-400 tracking-[0.4em] uppercase text-[10px] md:text-xs mb-12">
-            The Digital Frontier × Physical Manifestation
-          </motion.p>
-
-          <motion.div variants={fadeInUp} className="flex gap-4 md:gap-8 justify-center mb-16">
+          <motion.div variants={fadeInUp} className="flex gap-4 md:gap-6 justify-center mt-12 bg-black/60 p-6 rounded-2xl border border-white/5 backdrop-blur-md">
             {Object.entries(timeLeft).map(([unit, value], i) => (
-              <div key={i} className="flex flex-col items-center">
-                <div className="text-2xl md:text-5xl font-mono text-white border-b-2 border-[#ff005a]/50 pb-2">
+              <div key={i} className="flex flex-col items-center min-w-[70px]">
+                <div className="text-3xl md:text-6xl font-black text-[#00ffc3] font-mono">
                   {value < 10 ? `0${value}` : value}
                 </div>
-                <span className="text-[8px] md:text-[10px] uppercase tracking-widest mt-3 text-gray-500">
-                  {unit === 'd' ? 'Days' : unit === 'h' ? 'Hours' : unit === 'm' ? 'Mins' : 'Secs'}
-                </span>
+                <span className="text-[9px] uppercase tracking-widest mt-2 text-gray-400">{unit}</span>
               </div>
             ))}
           </motion.div>
         </motion.div>
       </section>
 
-      {/* 2. REGISTRATION HUB */}
+      {/* 2. REGISTRATION HUB (Player Card Style) */}
       <section className="py-24 px-6 relative">
-        <div className="container max-w-4xl mx-auto">
+        <div className="container max-w-5xl mx-auto">
           <motion.div 
-            initial="hidden" whileInView="visible" viewport={{ once: true }} variants={fadeInUp}
-            className="relative p-8 md:p-12 rounded-[2rem] bg-gradient-to-br from-white/[0.05] to-transparent border border-white/10 backdrop-blur-2xl overflow-hidden"
+            initial={{ opacity: 0, scale: 0.9 }} whileInView={{ opacity: 1, scale: 1 }} viewport={{ once: true }}
+            className="bg-[#1a1a1a] border-l-[12px] border-[#ff1177] rounded-r-3xl overflow-hidden shadow-2xl relative"
           >
-            <div className="absolute top-5 right-10 text-white/5 font-bold text-7xl select-none">○ △ □</div>
+            {/* Pattern Overlay */}
+            <div className="absolute inset-0 opacity-5 bg-[radial-gradient(#fff_1px,transparent_1px)] [background-size:20px_20px]" />
             
-            <div className="grid md:grid-cols-2 gap-12 items-center">
-              <div>
-                <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-[#ff005a]/10 border border-[#ff005a]/30 mb-6">
-                  <span className="w-2 h-2 rounded-full bg-[#ff005a] animate-pulse" />
-                  <span className="text-[#ff005a] text-[10px] font-bold uppercase tracking-widest">{EVENT_CONFIG.currentCategoryName} LIVE</span>
+            <div className="grid lg:grid-cols-5 gap-0 relative z-10">
+              <div className="lg:col-span-3 p-10 md:p-16">
+                <div className="flex items-center gap-4 mb-8">
+                  <div className="bg-[#ff1177] text-black px-4 py-1 font-black text-sm">PLAYER 2024</div>
+                  <div className="text-gray-500 tracking-[0.5em] font-bold">○ △ □</div>
                 </div>
-                <h2 className="text-4xl font-bold mb-4 uppercase leading-tight italic">Secure Your <br /> Player Entry</h2>
-                <p className="text-gray-400 text-sm leading-relaxed mb-8">
-                  Join the most anticipated convergence of the SSC &apos;24 batch. 
-                  Synchronize with your peers in a theme-based environment.
-                </p>
+                <h2 className="text-5xl md:text-7xl font-black mb-8 uppercase leading-none">DO YOU <br /> <span className="text-[#ff1177]">PLAY?</span></h2>
+                <div className="space-y-4 border-l-2 border-[#00ffc3]/30 pl-6">
+                  <p className="text-gray-400 text-lg uppercase tracking-tight">Status: <span className="text-[#00ffc3]">{EVENT_CONFIG.isRegistrationOpen ? 'Ready' : 'Eliminated'}</span></p>
+                  <p className="text-gray-400 text-lg uppercase tracking-tight">Batch: <span className="text-white">SSC &apos;24</span></p>
+                </div>
               </div>
 
-              <div className="bg-black/40 border border-white/5 rounded-3xl p-8 text-center flex flex-col items-center justify-center">
-                <span className="text-gray-500 text-[10px] uppercase tracking-[0.3em] mb-2">Registration Fee</span>
-                <div className="text-5xl font-bold text-white mb-8">{EVENT_CONFIG.registrationFee}</div>
-                
+              <div className="lg:col-span-2 bg-[#ff1177] p-10 flex flex-col items-center justify-center text-black">
+                <span className="uppercase font-black tracking-widest text-sm opacity-70 mb-2">Entry Fee</span>
+                <div className="text-6xl font-black mb-10 italic">{EVENT_CONFIG.registrationFee}</div>
                 <a 
                   href={EVENT_CONFIG.isRegistrationOpen ? EVENT_CONFIG.tickifyLink : "#"}
-                  className={`w-full py-5 rounded-xl font-bold text-[10px] uppercase tracking-[0.3em] flex items-center justify-center transition-all ${
-                    EVENT_CONFIG.isRegistrationOpen 
-                    ? "bg-[#ff005a] text-white hover:bg-[#ff005a]/80 shadow-[0_0_30px_rgba(255,0,90,0.3)]" 
-                    : "bg-gray-800 text-gray-500 cursor-not-allowed"
-                  }`}
+                  className="w-full py-6 bg-black text-[#ff1177] font-black text-xl uppercase tracking-widest hover:scale-105 transition-transform flex items-center justify-center gap-4 group"
                 >
-                  {EVENT_CONFIG.isRegistrationOpen ? "Register Now" : "Registration Closed"}
-                  {EVENT_CONFIG.isRegistrationOpen && <ArrowRight className="ml-3 w-4 h-4" />}
+                  {EVENT_CONFIG.isRegistrationOpen ? "JOIN GAME" : "CLOSED"}
+                  <ArrowRight size={28} className="group-hover:translate-x-2 transition-transform" />
                 </a>
               </div>
             </div>
@@ -151,74 +139,60 @@ export default function ReunionSquidEdition() {
         </div>
       </section>
 
-      {/* 3. FEE STRUCTURE TABLE */}
-      <section className="py-24 px-6 border-t border-white/5">
+      {/* 3. ACCESS TIERS (Gritty Style) */}
+      <section className="py-24 px-6 bg-[#0c0c0c]">
         <div className="container max-w-4xl mx-auto">
-          <div className="text-center mb-16">
-            <h2 className="text-2xl uppercase tracking-widest mb-4 italic font-bold">Access Tiers</h2>
-            <div className="h-1 w-20 bg-[#ff005a] mx-auto" />
-          </div>
-
-          <div className="grid gap-4">
+          <h2 className="text-center font-black text-3xl uppercase tracking-[0.5em] mb-16 text-gray-600">The Tiers</h2>
+          <div className="space-y-6">
             {EVENT_CONFIG.feeStructure.map((tier, idx) => (
-              <motion.div 
+              <div 
                 key={idx}
-                whileHover={{ scale: 1.01 }}
-                className={`flex items-center justify-between p-6 md:p-8 rounded-2xl border transition-all ${
+                className={`p-1 border-2 transition-all ${
                   tier.label === EVENT_CONFIG.currentCategoryName 
-                  ? "bg-[#ff005a]/5 border-[#ff005a] shadow-[0_0_20px_rgba(255,0,90,0.1)]" 
-                  : "bg-white/[0.02] border-white/5 opacity-60"
+                  ? "border-[#ff1177] bg-[#ff1177]/5" 
+                  : "border-white/5 bg-transparent"
                 }`}
               >
-                <div className="flex items-center gap-6">
-                  <div className={`w-10 h-10 rounded-full flex items-center justify-center border ${tier.label === EVENT_CONFIG.currentCategoryName ? "border-[#ff005a] text-[#ff005a]" : "border-gray-700 text-gray-700"}`}>
-                    {tier.status === "Active" ? <CheckCircle2 size={20} /> : <Timer size={20} />}
+                <div className="flex items-center justify-between p-6 bg-[#0a0a0a]">
+                  <div className="flex items-center gap-6">
+                    <div className={`text-4xl font-black ${tier.label === EVENT_CONFIG.currentCategoryName ? "text-[#ff1177]" : "text-gray-800"}`}>
+                      0{idx + 1}
+                    </div>
+                    <div>
+                      <h3 className="font-black text-xl uppercase italic">{tier.label}</h3>
+                      <span className={`text-[10px] uppercase font-bold tracking-[0.3em] ${tier.label === EVENT_CONFIG.currentCategoryName ? "text-[#00ffc3]" : "text-gray-600"}`}>
+                        {tier.status}
+                      </span>
+                    </div>
                   </div>
-                  <div>
-                    <h3 className="font-bold text-sm uppercase">{tier.label}</h3>
-                    <p className="text-[10px] text-gray-500 uppercase tracking-widest">{tier.status}</p>
-                  </div>
+                  <div className="text-3xl font-black text-white/90">{tier.fee}</div>
                 </div>
-                <div className="font-bold text-lg text-white">{tier.fee}</div>
-              </motion.div>
+              </div>
             ))}
           </div>
         </div>
       </section>
 
-      {/* 4. EVENT HIGHLIGHTS */}
-      <section className="py-32 px-6 bg-gradient-to-b from-transparent to-[#0a0a0a]">
-        <div className="container max-w-6xl mx-auto">
-          <div className="grid md:grid-cols-3 gap-8">
-            {[
-              { icon: Trophy, title: "Theme Games", desc: "Experience the adrenaline of Squid Game adapted for our reunion safety and fun." },
-              { icon: Users, title: "Networking", desc: "Re-sync with friends and build new bridges across the HSC '26 landscape." },
-              { icon: Gamepad2, title: "Nostalgia Node", desc: "A cinematic trip back to our SSC '24 memories through immersive visuals." }
-            ].map((item, i) => (
-              <motion.div 
-                key={i} 
-                initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ delay: i * 0.2 }}
-                className="p-8 rounded-3xl bg-white/[0.03] border border-white/5 hover:border-[#ff005a]/30 transition-colors group"
-              >
-                <item.icon className="text-[#ff005a] mb-6 group-hover:scale-110 transition-transform" size={32} />
-                <h3 className="font-bold text-xs uppercase mb-4 tracking-widest">{item.title}</h3>
-                <p className="text-gray-500 text-xs leading-relaxed uppercase">{item.desc}</p>
-              </motion.div>
-            ))}
-          </div>
+      {/* 4. HIGHLIGHTS (Brutalist Blocks) */}
+      <section className="py-32 px-6">
+        <div className="container max-w-6xl mx-auto grid md:grid-cols-3 gap-0">
+          {[
+            { title: "THE GAMES", desc: "Red Light, Green Light - with a reunion twist.", color: "#ff1177" },
+            { title: "THE SQUAD", desc: "Batch of '24. No one gets left behind.", color: "#00ffc3" },
+            { title: "THE REWARD", desc: "Memories worth more than 45.6 Billion.", color: "#ffffff" }
+          ].map((item, i) => (
+            <div key={i} className="p-12 border border-white/5 hover:bg-white/[0.02] transition-colors">
+              <h3 className="text-3xl font-black mb-6" style={{ color: item.color }}>{item.title}</h3>
+              <p className="text-gray-500 uppercase font-bold text-sm leading-relaxed">{item.desc}</p>
+            </div>
+          ))}
         </div>
       </section>
 
-      {/* FOOTER */}
-      <footer className="py-20 border-t border-white/5 text-center">
-        <div className="text-[10px] text-gray-600 uppercase tracking-[1em] mb-4">
-          BackBencher&apos;s &apos;24 | Digital Frontier
-        </div>
-        <div className="flex justify-center gap-6 text-white/20 font-bold text-xl">
-           ○ △ □
-        </div>
+      <footer className="py-20 text-center border-t border-white/5">
+        <div className="text-6xl mb-8 font-black text-white/5">○ △ □</div>
+        <p className="text-xs uppercase tracking-[1em] text-gray-700">BackBencher&apos;s 2024</p>
       </footer>
-
     </main>
   );
 }
