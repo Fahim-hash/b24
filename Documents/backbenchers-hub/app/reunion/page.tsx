@@ -1,19 +1,15 @@
 "use client";
 
 import React, { useState, useEffect } from 'react';
-import { motion } from 'framer-motion';
+import { motion, useScroll, useTransform } from 'framer-motion';
 import Image from 'next/image';
-import { 
-  Trophy, Users, Gamepad2, Timer, 
-  ArrowRight, CheckCircle2 
-} from 'lucide-react';
+import { Timer, ArrowRight, CheckCircle2, MapPin, Calendar } from 'lucide-react';
 
 const EVENT_CONFIG = {
-  eventName: "চব্বিশের Reunion (Squid Edition)",
-  currentCategoryName: "Early Bird", 
+  currentCategoryName: "Early Bird",
   registrationFee: "512 BDT",
   isRegistrationOpen: true,
-  tickifyLink: "https://tickify.live/events/backbenchers24", 
+  tickifyLink: "https://tickify.live/events/backbenchers24",
   eventDate: "November 1, 2026 00:00:00",
   feeStructure: [
     { label: "Early Bird", fee: "512 BDT", status: "Active" },
@@ -22,16 +18,9 @@ const EVENT_CONFIG = {
   ]
 };
 
-const fadeInUp = {
-  hidden: { opacity: 0, y: 30 },
-  visible: { 
-    opacity: 1, 
-    y: 0, 
-    transition: { duration: 0.8, ease: [0.16, 1, 0.3, 1] as any } 
-  }
-};
-
-export default function ReunionSquidEdition() {
+export default function ReunionCinematic() {
+  const { scrollYProgress } = useScroll();
+  const yRange = useTransform(scrollYProgress, [0, 1], [0, -200]);
   const [timeLeft, setTimeLeft] = useState({ d: 0, h: 0, m: 0, s: 0 });
 
   useEffect(() => {
@@ -52,147 +41,161 @@ export default function ReunionSquidEdition() {
   }, []);
 
   return (
-    <main className="bg-[#0a0a0a] min-h-screen text-white selection:bg-[#ff1177]/40 overflow-x-hidden relative">
-      {/* Background Overlay: Grainy Texture & Large Symbols */}
-      <div className="fixed inset-0 bg-[url('https://grainy-gradients.vercel.app/noise.svg')] opacity-[0.03] pointer-events-none z-50" />
-      <div className="absolute top-0 left-0 w-full h-full overflow-hidden pointer-events-none opacity-5">
-        <div className="absolute -top-20 -left-20 text-[40rem] font-bold text-white">○</div>
-        <div className="absolute bottom-0 right-0 text-[30rem] font-bold text-[#ff1177]">△</div>
-      </div>
+    <main className="bg-[#020202] min-h-screen text-white selection:bg-[#ff005a]/30 overflow-x-hidden font-sans">
+      
+      {/* Cinematic Vignette Overlay */}
+      <div className="fixed inset-0 pointer-events-none z-50 shadow-[inset_0_0_150px_rgba(0,0,0,0.9)]" />
 
-      {/* 1. HERO SECTION */}
-      <section className="relative min-h-screen flex flex-col items-center justify-center pt-20 px-6">
-        <motion.div 
-          initial="hidden" animate="visible"
-          className="container max-w-6xl mx-auto text-center z-10"
-        >
-          <motion.div variants={fadeInUp} className="relative w-72 h-72 md:w-96 md:h-96 mx-auto mb-10">
-            {/* Pink Glow Behind Image */}
-            <div className="absolute inset-0 bg-[#ff1177] blur-[100px] opacity-25 animate-pulse" />
-            <div className="relative w-full h-full border-4 border-[#ff1177] rounded-full overflow-hidden shadow-[0_0_50px_rgba(255,17,119,0.4)]">
-              <Image 
-                src="/sq_re_2.jpg" 
-                alt="Squid Edition Logo" 
-                fill 
-                className="object-cover scale-110"
-                priority
-              />
-            </div>
-            {/* Squid Symbols */}
-            <div className="absolute -bottom-5 left-1/2 -translate-x-1/2 bg-[#ff1177] px-6 py-2 rounded-sm font-bold tracking-[1em] text-black">○△□</div>
-          </motion.div>
-
-          <motion.h1 variants={fadeInUp} className="text-5xl md:text-8xl uppercase font-black tracking-tighter mb-4 italic">
-            <span className="text-transparent bg-clip-text bg-gradient-to-b from-white to-gray-500">চব্বিশের</span> <br />
-            <span className="text-[#ff1177] drop-shadow-[0_0_20px_rgba(255,17,119,0.8)]">REUNION</span>
-          </motion.h1>
-          
-          <motion.div variants={fadeInUp} className="flex gap-4 md:gap-6 justify-center mt-12 bg-black/60 p-6 rounded-2xl border border-white/5 backdrop-blur-md">
-            {Object.entries(timeLeft).map(([unit, value], i) => (
-              <div key={i} className="flex flex-col items-center min-w-[70px]">
-                <div className="text-3xl md:text-6xl font-black text-[#00ffc3] font-mono">
-                  {value < 10 ? `0${value}` : value}
-                </div>
-                <span className="text-[9px] uppercase tracking-widest mt-2 text-gray-400">{unit}</span>
-              </div>
-            ))}
-          </motion.div>
+      {/* 1. HERO SECTION (IMMERSE) */}
+      <section className="relative h-screen flex flex-col items-center justify-center px-6">
+        <motion.div style={{ y: yRange }} className="absolute inset-0 z-0">
+          <div className="absolute inset-0 bg-gradient-to-b from-transparent via-[#020202]/60 to-[#020202] z-10" />
+          <Image 
+            src="/sq_re_2.jpg" 
+            alt="Reunion Background" 
+            fill 
+            className="object-cover opacity-40 grayscale-[0.5] contrast-125"
+            priority
+          />
         </motion.div>
+
+        <div className="relative z-20 text-center space-y-6">
+          <motion.div 
+            initial={{ opacity: 0, scale: 0.9 }}
+            animate={{ opacity: 1, scale: 1 }}
+            transition={{ duration: 1.5, ease: "easeOut" }}
+          >
+            <h1 className="text-6xl md:text-9xl font-black tracking-tighter uppercase italic leading-none">
+              REUNION <br />
+              <span className="text-[#ff005a] drop-shadow-[0_0_30px_rgba(255,0,90,0.4)]">SQUID ED.</span>
+            </h1>
+          </motion.div>
+
+          <motion.div 
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ delay: 0.5, duration: 1 }}
+            className="flex items-center justify-center gap-6 text-xs md:text-sm tracking-[0.5em] text-gray-400 uppercase"
+          >
+            <span className="flex items-center gap-2"><Calendar size={14}/> Post-HSC 2026</span>
+            <span className="w-1 h-1 bg-gray-600 rounded-full" />
+            <span className="flex items-center gap-2"><MapPin size={14}/> Dhaka, BD</span>
+          </motion.div>
+        </div>
+
+        {/* Scroll Indicator */}
+        <div className="absolute bottom-10 left-1/2 -translate-x-1/2 animate-bounce opacity-30">
+          <div className="w-[1px] h-12 bg-white" />
+        </div>
       </section>
 
-      {/* 2. REGISTRATION HUB (Player Card Style) */}
-      <section className="py-24 px-6 relative">
-        <div className="container max-w-5xl mx-auto">
+      {/* 2. THE COUNTDOWN (GLASS CARD) */}
+      <section className="py-20 relative z-20 -mt-32 px-6">
+        <div className="max-w-4xl mx-auto">
           <motion.div 
-            initial={{ opacity: 0, scale: 0.9 }} whileInView={{ opacity: 1, scale: 1 }} viewport={{ once: true }}
-            className="bg-[#1a1a1a] border-l-[12px] border-[#ff1177] rounded-r-3xl overflow-hidden shadow-2xl relative"
+            initial={{ opacity: 0, y: 50 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            className="bg-white/[0.03] border border-white/10 backdrop-blur-3xl rounded-[3rem] p-12 text-center"
           >
-            {/* Pattern Overlay */}
-            <div className="absolute inset-0 opacity-5 bg-[radial-gradient(#fff_1px,transparent_1px)] [background-size:20px_20px]" />
-            
-            <div className="grid lg:grid-cols-5 gap-0 relative z-10">
-              <div className="lg:col-span-3 p-10 md:p-16">
-                <div className="flex items-center gap-4 mb-8">
-                  <div className="bg-[#ff1177] text-black px-4 py-1 font-black text-sm">PLAYER 2024</div>
-                  <div className="text-gray-500 tracking-[0.5em] font-bold">○ △ □</div>
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-8">
+              {Object.entries(timeLeft).map(([unit, value], i) => (
+                <div key={i} className="space-y-2">
+                  <div className="text-4xl md:text-6xl font-light">{value < 10 ? `0${value}` : value}</div>
+                  <div className="text-[10px] uppercase tracking-widest text-[#ff005a] font-bold">{unit === 'd' ? 'Days' : unit === 'h' ? 'Hours' : unit === 'm' ? 'Minutes' : 'Seconds'}</div>
                 </div>
-                <h2 className="text-5xl md:text-7xl font-black mb-8 uppercase leading-none">DO YOU <br /> <span className="text-[#ff1177]">PLAY?</span></h2>
-                <div className="space-y-4 border-l-2 border-[#00ffc3]/30 pl-6">
-                  <p className="text-gray-400 text-lg uppercase tracking-tight">Status: <span className="text-[#00ffc3]">{EVENT_CONFIG.isRegistrationOpen ? 'Ready' : 'Eliminated'}</span></p>
-                  <p className="text-gray-400 text-lg uppercase tracking-tight">Batch: <span className="text-white">SSC &apos;24</span></p>
-                </div>
-              </div>
-
-              <div className="lg:col-span-2 bg-[#ff1177] p-10 flex flex-col items-center justify-center text-black">
-                <span className="uppercase font-black tracking-widest text-sm opacity-70 mb-2">Entry Fee</span>
-                <div className="text-6xl font-black mb-10 italic">{EVENT_CONFIG.registrationFee}</div>
-                <a 
-                  href={EVENT_CONFIG.isRegistrationOpen ? EVENT_CONFIG.tickifyLink : "#"}
-                  className="w-full py-6 bg-black text-[#ff1177] font-black text-xl uppercase tracking-widest hover:scale-105 transition-transform flex items-center justify-center gap-4 group"
-                >
-                  {EVENT_CONFIG.isRegistrationOpen ? "JOIN GAME" : "CLOSED"}
-                  <ArrowRight size={28} className="group-hover:translate-x-2 transition-transform" />
-                </a>
-              </div>
+              ))}
             </div>
           </motion.div>
         </div>
       </section>
 
-      {/* 3. ACCESS TIERS (Gritty Style) */}
-      <section className="py-24 px-6 bg-[#0c0c0c]">
-        <div className="container max-w-4xl mx-auto">
-          <h2 className="text-center font-black text-3xl uppercase tracking-[0.5em] mb-16 text-gray-600">The Tiers</h2>
-          <div className="space-y-6">
+      {/* 3. REGISTRATION (MINIMALIST CALL TO ACTION) */}
+      <section className="py-32 px-6">
+        <div className="max-w-6xl mx-auto grid lg:grid-cols-2 gap-20 items-center">
+          <motion.div 
+            initial={{ opacity: 0, x: -30 }}
+            whileInView={{ opacity: 1, x: 0 }}
+            viewport={{ once: true }}
+            className="space-y-8"
+          >
+            <h2 className="text-4xl md:text-6xl font-bold leading-tight">
+              A Convergence of <br /> 
+              <span className="text-gray-500 italic">BackBenchers.</span>
+            </h2>
+            <p className="text-gray-400 text-lg leading-relaxed max-w-md">
+              Synchronize with the SSC &apos;24 cohort. This is not just a reunion; it&apos;s a digital-physical manifestation of our history.
+            </p>
+            <div className="flex items-center gap-6 pt-4">
+              <div className="px-4 py-2 bg-white/5 border border-white/10 rounded-full text-xs uppercase tracking-widest">○ △ □ PLAYER 2024</div>
+            </div>
+          </motion.div>
+
+          <motion.div 
+            initial={{ opacity: 0, x: 30 }}
+            whileInView={{ opacity: 1, x: 0 }}
+            viewport={{ once: true }}
+            className="relative group"
+          >
+            <div className="absolute -inset-1 bg-gradient-to-r from-[#ff005a] to-[#00f0ff] rounded-[2rem] blur opacity-20 group-hover:opacity-40 transition duration-1000" />
+            <div className="relative bg-[#050505] border border-white/10 p-10 rounded-[2rem] flex flex-col items-center">
+              <span className="text-[10px] uppercase tracking-[0.4em] text-gray-500 mb-4">Current Entry Pass</span>
+              <div className="text-6xl font-black mb-2">{EVENT_CONFIG.registrationFee}</div>
+              <div className="text-[#ff005a] text-xs uppercase tracking-widest mb-10 font-bold">{EVENT_CONFIG.currentCategoryName} PHASE</div>
+              
+              <a 
+                href={EVENT_CONFIG.isRegistrationOpen ? EVENT_CONFIG.tickifyLink : "#"}
+                className={`w-full py-5 rounded-2xl flex items-center justify-center gap-4 text-sm uppercase tracking-[0.2em] font-bold transition-all ${
+                  EVENT_CONFIG.isRegistrationOpen 
+                  ? "bg-white text-black hover:bg-[#ff005a] hover:text-white" 
+                  : "bg-white/5 text-gray-600 cursor-not-allowed"
+                }`}
+              >
+                {EVENT_CONFIG.isRegistrationOpen ? "Reserve Entry" : "Phase Closed"}
+                <ArrowRight size={18} />
+              </a>
+            </div>
+          </motion.div>
+        </div>
+      </section>
+
+      {/* 4. TIER SYSTEM (CLEAN LIST) */}
+      <section className="py-32 px-6 border-t border-white/5">
+        <div className="max-w-4xl mx-auto space-y-12">
+          <div className="flex flex-col items-center text-center space-y-4">
+            <h3 className="text-sm uppercase tracking-[0.6em] text-gray-500">Tier Access Structure</h3>
+            <div className="h-[1px] w-12 bg-[#ff005a]" />
+          </div>
+
+          <div className="space-y-4">
             {EVENT_CONFIG.feeStructure.map((tier, idx) => (
               <div 
                 key={idx}
-                className={`p-1 border-2 transition-all ${
+                className={`group flex items-center justify-between p-8 rounded-3xl border transition-all duration-500 ${
                   tier.label === EVENT_CONFIG.currentCategoryName 
-                  ? "border-[#ff1177] bg-[#ff1177]/5" 
-                  : "border-white/5 bg-transparent"
+                  ? "bg-white/[0.02] border-[#ff005a] shadow-[0_0_40px_rgba(255,0,90,0.1)]" 
+                  : "border-white/5 opacity-40 hover:opacity-100"
                 }`}
               >
-                <div className="flex items-center justify-between p-6 bg-[#0a0a0a]">
-                  <div className="flex items-center gap-6">
-                    <div className={`text-4xl font-black ${tier.label === EVENT_CONFIG.currentCategoryName ? "text-[#ff1177]" : "text-gray-800"}`}>
-                      0{idx + 1}
-                    </div>
-                    <div>
-                      <h3 className="font-black text-xl uppercase italic">{tier.label}</h3>
-                      <span className={`text-[10px] uppercase font-bold tracking-[0.3em] ${tier.label === EVENT_CONFIG.currentCategoryName ? "text-[#00ffc3]" : "text-gray-600"}`}>
-                        {tier.status}
-                      </span>
-                    </div>
+                <div className="flex items-center gap-8">
+                  <span className="text-xs font-mono text-gray-600">0{idx + 1}</span>
+                  <div>
+                    <h4 className="text-xl font-bold uppercase tracking-tight">{tier.label}</h4>
+                    <p className="text-[10px] uppercase tracking-widest text-[#ff005a] mt-1">{tier.status}</p>
                   </div>
-                  <div className="text-3xl font-black text-white/90">{tier.fee}</div>
                 </div>
+                <div className="text-2xl font-light tracking-tighter">{tier.fee}</div>
               </div>
             ))}
           </div>
         </div>
       </section>
 
-      {/* 4. HIGHLIGHTS (Brutalist Blocks) */}
-      <section className="py-32 px-6">
-        <div className="container max-w-6xl mx-auto grid md:grid-cols-3 gap-0">
-          {[
-            { title: "THE GAMES", desc: "Red Light, Green Light - with a reunion twist.", color: "#ff1177" },
-            { title: "THE SQUAD", desc: "Batch of '24. No one gets left behind.", color: "#00ffc3" },
-            { title: "THE REWARD", desc: "Memories worth more than 45.6 Billion.", color: "#ffffff" }
-          ].map((item, i) => (
-            <div key={i} className="p-12 border border-white/5 hover:bg-white/[0.02] transition-colors">
-              <h3 className="text-3xl font-black mb-6" style={{ color: item.color }}>{item.title}</h3>
-              <p className="text-gray-500 uppercase font-bold text-sm leading-relaxed">{item.desc}</p>
-            </div>
-          ))}
-        </div>
-      </section>
-
-      <footer className="py-20 text-center border-t border-white/5">
-        <div className="text-6xl mb-8 font-black text-white/5">○ △ □</div>
-        <p className="text-xs uppercase tracking-[1em] text-gray-700">BackBencher&apos;s 2024</p>
+      {/* FOOTER */}
+      <footer className="py-20 text-center opacity-20 hover:opacity-100 transition-opacity">
+        <p className="text-[10px] uppercase tracking-[1em]">BackBencher&apos;s 2024 • Cinematic Frontier</p>
       </footer>
+
     </main>
   );
 }
