@@ -117,7 +117,7 @@ export default function ReunionSquidEdition() {
             <div className="absolute inset-0 bg-gradient-to-tr from-[#ff005a] to-[#00f0ff] blur-[80px] opacity-20 group-hover:opacity-50 transition-all duration-700" />
             <div className="relative w-full h-full border border-white/10 rounded-[2rem] overflow-hidden backdrop-blur-md p-4 bg-black/40">
               <Image 
-                src="/sq_re_2.jpg" 
+                src="/sq_re.png" 
                 alt="Squid Edition Logo" 
                 fill 
                 className="object-cover p-2 rounded-[1.5rem] grayscale-[0.2] contrast-125"
