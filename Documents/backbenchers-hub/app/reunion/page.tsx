@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useEffect } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion, AnimatePresence, Variants } from 'framer-motion';
 import Image from 'next/image';
 import { 
   Trophy, Users, Gamepad2, Timer, 
@@ -52,17 +52,20 @@ const FAQS = [
   { q: "Are the games physically dangerous?", a: "No. All games are completely safe, adapted for fun and nostalgia. The 'danger' is purely cinematic." }
 ];
 
-// --- Framer Motion Variants ---
-const fadeInUp = {
+// --- Framer Motion Variants (FIXED TYPE ERROR) ---
+const fadeInUp: Variants = {
   hidden: { opacity: 0, y: 40 },
   visible: { 
     opacity: 1, 
     y: 0, 
-    transition: { duration: 0.8, ease: [0.16, 1, 0.3, 1] } 
+    transition: { 
+      duration: 0.8, 
+      ease: [0.16, 1, 0.3, 1] 
+    } 
   }
 };
 
-const stagger = {
+const stagger: Variants = {
   visible: { transition: { staggerChildren: 0.15 } }
 };
 
@@ -90,7 +93,7 @@ export default function ReunionSquidEdition() {
   return (
     <main className="bg-[#020202] min-h-screen text-gray-200 selection:bg-[#ff005a]/40 overflow-x-hidden font-sans">
       
-      {/* Background Noise & Grid (Cyber-Academic Vibe) */}
+      {/* Background Noise & Grid */}
       <div className="fixed inset-0 pointer-events-none z-0 opacity-20" style={{ backgroundImage: 'radial-gradient(#ff005a 1px, transparent 1px)', backgroundSize: '40px 40px' }} />
       <div className="fixed inset-0 pointer-events-none z-0 shadow-[inset_0_0_200px_rgba(0,0,0,0.9)]" />
 
@@ -147,19 +150,16 @@ export default function ReunionSquidEdition() {
             ))}
           </motion.div>
 
-          {/* Scroll Indicator */}
           <motion.div variants={fadeInUp} className="animate-bounce flex justify-center opacity-30 mt-10">
             <div className="w-[1px] h-16 bg-gradient-to-b from-white to-transparent" />
           </motion.div>
         </motion.div>
       </section>
 
-      {/* 2. EVENT OVERVIEW (THE LORE) */}
+      {/* 2. EVENT OVERVIEW */}
       <section className="py-32 px-6 relative z-10 border-t border-white/5 bg-black/50 backdrop-blur-sm">
         <div className="container max-w-6xl mx-auto">
           <div className="grid lg:grid-cols-12 gap-16 items-center">
-            
-            {/* Graphic Side */}
             <motion.div 
               initial={{ opacity: 0, x: -50 }} whileInView={{ opacity: 1, x: 0 }} viewport={{ once: true }} transition={{ duration: 0.8 }}
               className="lg:col-span-5 relative"
@@ -186,7 +186,6 @@ export default function ReunionSquidEdition() {
               </div>
             </motion.div>
 
-            {/* Text Side */}
             <motion.div 
               initial={{ opacity: 0, x: 50 }} whileInView={{ opacity: 1, x: 0 }} viewport={{ once: true }} transition={{ duration: 0.8 }}
               className="lg:col-span-7 space-y-8"
@@ -216,14 +215,13 @@ export default function ReunionSquidEdition() {
         </div>
       </section>
 
-      {/* 3. REGISTRATION HUB (TICKIFY) */}
+      {/* 3. REGISTRATION HUB */}
       <section className="py-32 px-6 relative z-10">
         <div className="container max-w-5xl mx-auto">
           <motion.div 
             initial={{ opacity: 0, y: 50 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ duration: 0.8 }}
             className="relative p-8 md:p-16 rounded-[3rem] bg-[#050505] border border-[#ff005a]/20 shadow-[0_0_100px_rgba(255,0,90,0.05)] overflow-hidden"
           >
-            {/* Decorative BG element */}
             <div className="absolute top-0 right-0 w-[800px] h-[800px] bg-[radial-gradient(ellipse_at_top_right,_var(--tw-gradient-stops))] from-[#ff005a]/10 via-transparent to-transparent pointer-events-none" />
 
             <div className="grid md:grid-cols-2 gap-16 items-center relative z-10">
@@ -236,7 +234,7 @@ export default function ReunionSquidEdition() {
                   Secure Your <br /> <span className="text-transparent bg-clip-text bg-gradient-to-r from-gray-500 to-gray-300">Player Entry</span>
                 </h2>
                 <p className="text-gray-400 text-sm leading-relaxed mb-8">
-                  Synchronize with the BackBencher&apos;s network. Official passes are distributed exclusively via Tickify. Do not miss the initial phase.
+                  Synchronize with the BackBencher&apos;s network. Official passes are distributed exclusively via Tickify.
                 </p>
                 <div className="flex items-center gap-4 text-[10px] uppercase tracking-widest font-mono text-gray-500">
                   <ShieldAlert size={14} /> Powered by Tickify
@@ -267,17 +265,14 @@ export default function ReunionSquidEdition() {
         </div>
       </section>
 
-      {/* 4. TIER STRUCTURE & SCHEDULE ALONG SIDE */}
+      {/* 4. TIER STRUCTURE & SCHEDULE */}
       <section className="py-32 px-6 border-t border-white/5 relative z-10 bg-black/30">
         <div className="container max-w-7xl mx-auto grid lg:grid-cols-2 gap-24">
-          
-          {/* Tiers Column */}
           <div>
             <div className="mb-12">
               <h2 className="text-sm uppercase tracking-[0.5em] text-[#ff005a] font-mono mb-2">Pricing Nodes</h2>
               <h3 className="text-4xl font-bold uppercase italic tracking-tighter text-white">Access Tiers</h3>
             </div>
-
             <div className="space-y-4">
               {EVENT_CONFIG.feeStructure.map((tier, idx) => (
                 <motion.div 
@@ -307,13 +302,11 @@ export default function ReunionSquidEdition() {
             </div>
           </div>
 
-          {/* Schedule Column */}
           <div>
             <div className="mb-12">
               <h2 className="text-sm uppercase tracking-[0.5em] text-[#00f0ff] font-mono mb-2">Event Timeline</h2>
               <h3 className="text-4xl font-bold uppercase italic tracking-tighter text-white">The Itinerary</h3>
             </div>
-
             <div className="relative border-l border-white/10 ml-4 space-y-12">
               {TIMELINE_DATA.map((item, idx) => (
                 <motion.div 
@@ -321,9 +314,7 @@ export default function ReunionSquidEdition() {
                   initial={{ opacity: 0, x: 20 }} whileInView={{ opacity: 1, x: 0 }} viewport={{ once: true }} transition={{ delay: idx * 0.1 }}
                   className="relative pl-8"
                 >
-                  {/* Timeline Dot */}
-                  <div className="absolute -left-[5px] top-1.5 w-[9px] h-[9px] bg-black border-2 border-gray-500 rounded-full group-hover:border-[#00f0ff] transition-colors" />
-                  
+                  <div className="absolute -left-[5px] top-1.5 w-[9px] h-[9px] bg-black border-2 border-gray-500 rounded-full" />
                   <div className="text-[10px] font-mono text-[#00f0ff] mb-2 tracking-widest">{item.time}</div>
                   <h4 className="text-lg font-bold text-white uppercase tracking-tight mb-2">{item.title}</h4>
                   <p className="text-sm text-gray-400 leading-relaxed">{item.desc}</p>
@@ -331,18 +322,16 @@ export default function ReunionSquidEdition() {
               ))}
             </div>
           </div>
-
         </div>
       </section>
 
-      {/* 5. PROTOCOL (HIGHLIGHTS) */}
+      {/* 5. PROTOCOL */}
       <section className="py-32 px-6 bg-gradient-to-b from-transparent to-[#050505] relative z-10">
         <div className="container max-w-6xl mx-auto">
           <div className="text-center mb-20">
             <h2 className="text-4xl md:text-5xl font-black uppercase italic tracking-tighter text-white mb-4">Event Protocols</h2>
             <div className="w-16 h-1 bg-[#ff005a] mx-auto" />
           </div>
-
           <div className="grid md:grid-cols-3 gap-8">
             {[
               { icon: Trophy, title: "Theme Games", desc: "Experience the adrenaline of Squid Game adapted for our reunion safety and fun." },
@@ -354,7 +343,6 @@ export default function ReunionSquidEdition() {
                 initial={{ opacity: 0, y: 30 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ delay: i * 0.2 }}
                 className="p-10 rounded-[2rem] bg-white/[0.02] border border-white/5 hover:border-[#ff005a]/30 transition-all duration-500 group relative overflow-hidden"
               >
-                <div className="absolute top-0 right-0 w-32 h-32 bg-white/5 blur-3xl rounded-full group-hover:bg-[#ff005a]/10 transition-colors" />
                 <item.icon className="text-[#ff005a] mb-8 group-hover:scale-110 transition-transform duration-500" size={40} strokeWidth={1.5} />
                 <h3 className="font-bold text-lg uppercase mb-4 tracking-widest text-white">{item.title}</h3>
                 <p className="text-gray-500 text-sm leading-relaxed">{item.desc}</p>
@@ -371,7 +359,6 @@ export default function ReunionSquidEdition() {
             <h2 className="text-sm uppercase tracking-[0.5em] text-gray-500 font-mono mb-4">Classified Information</h2>
             <h3 className="text-4xl font-bold uppercase italic tracking-tighter text-white">F.A.Q</h3>
           </div>
-
           <div className="space-y-4">
             {FAQS.map((faq, idx) => (
               <motion.div 
@@ -408,7 +395,7 @@ export default function ReunionSquidEdition() {
       <footer className="py-12 border-t border-white/5 text-center relative z-10 bg-[#020202]">
         <div className="container mx-auto px-6">
           <div className="flex justify-center gap-8 text-white/20 font-black text-3xl mb-8 tracking-[1em] ml-[1em]">
-             ○ △ □
+              ○ △ □
           </div>
           <div className="text-[10px] text-gray-600 uppercase tracking-[0.5em] mb-4 font-mono">
             BackBencher&apos;s 2024 | Digital Frontier
