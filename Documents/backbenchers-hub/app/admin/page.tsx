@@ -32,7 +32,7 @@ export default function AdminPortal() {
       });
 
       // ২. ইমেইল পাঠানোর API কল (নিচে API রুট দেওয়া আছে)
-      await fetch('/api/send-ticket', {
+      await fetch('/api/send-ticket/route.ts', {
         method: 'POST',
         body: JSON.stringify({ email: reg.email, name: reg.name, ticketId: ticketId, status: 'approved' }),
       });
