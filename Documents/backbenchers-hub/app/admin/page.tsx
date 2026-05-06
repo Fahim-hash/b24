@@ -3,14 +3,14 @@
 import React, { useEffect, useState } from 'react';
 import { db } from '@/lib/firebase';
 import { collection, query, onSnapshot, doc, updateDoc, deleteDoc } from 'firebase/firestore';
-import * as XLSX from 'xlsx'; // npm install xlsx
+import * as XLSX from 'xlsx';
 
 export default function AdminPortal() {
   const [registrations, setRegistrations] = useState<any[]>([]);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [pass, setPass] = useState('');
 
-  const ADMIN_PASS = "Fahim@2026"; // তোমার সিক্রেট পাসওয়ার্ড
+  const ADMIN_PASS = "Fahim@2026";
 
   useEffect(() => {
     if (!isAuthenticated) return;
@@ -21,7 +21,6 @@ export default function AdminPortal() {
     return () => unsubscribe();
   }, [isAuthenticated]);
 
-  // পেমেন্ট অ্যাপ্রুভ এবং ইমেইল সেন্ডিং
   const handleApprove = async (reg: any) => {
     const ticketId = `B24-${Math.random().toString(36).substr(2, 9).toUpperCase()}`;
     try {
@@ -31,32 +30,48 @@ export default function AdminPortal() {
         ticketId: ticketId 
       });
 
-      // ২. ইমেইল পাঠানোর API কল (নিচে API রুট দেওয়া আছে)
-      await fetch('/api/send-ticket', {
+      // ২. API কল (ইমেইল ও পিডিএফ পাঠানোর জন্য)
+      const response = await fetch('/api/send-ticket', {
         method: 'POST',
-        body: JSON.stringify({ email: reg.email, name: reg.name, ticketId: ticketId, status: 'approved' }),
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ 
+          email: reg.email, 
+          name: reg.name, 
+          phone: reg.phone,
+          school: reg.school || 'N/A',
+          board: reg.board || 'N/A',
+          batch: reg.batch || '2024',
+          trxId: reg.trxId,
+          ticketId: ticketId, 
+          status: 'approved' 
+        }),
       });
 
-      alert(`Approved! Ticket ID: ${ticketId}`);
+      if (response.ok) {
+        alert(`Approved! Ticket ID: ${ticketId} and Email Sent.`);
+      } else {
+        alert("Approved in DB, but Email API failed.");
+      }
     } catch (err) {
-      alert("Approval failed but data updated.");
+      alert("Error: Check console.");
+      console.error(err);
     }
   };
 
   const handleReject = async (reg: any) => {
-    const reason = prompt("Reject করার কারণ লিখুন (যেমন: Invalid TrxID):");
+    const reason = prompt("Reject করার কারণ লিখুন:");
     if (!reason) return;
 
     await updateDoc(doc(db, "registrations", reg.id), { status: "rejected", rejectReason: reason });
     
     await fetch('/api/send-ticket', {
       method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ email: reg.email, name: reg.name, reason: reason, status: 'rejected' }),
     });
-    alert("Rejected email sent.");
+    alert("Rejected and email sent.");
   };
 
-  // এক্সেল এক্সপোর্ট ফাংশন
   const exportToExcel = () => {
     const worksheet = XLSX.utils.json_to_sheet(registrations);
     const workbook = XLSX.utils.book_new();
@@ -69,9 +84,8 @@ export default function AdminPortal() {
       <div className="h-screen flex items-center justify-center bg-black text-white font-mono">
         <div className="space-y-4 text-center">
           <h2 className="text-xl tracking-tighter">ADMIN ACCESS REQUIRED</h2>
-          <input type="password" placeholder="Enter Access Key" className="bg-transparent border-b border-white/20 p-2 outline-none text-center"
-            onChange={(e) => setPass(e.target.value)} />
-          <button onClick={() => pass === ADMIN_PASS && setIsAuthenticated(true)} className="block mx-auto text-blue-500 text-xs">COMMENCE</button>
+          <input type="password" onChange={(e) => setPass(e.target.value)} className="bg-transparent border-b border-white/20 p-2 outline-none text-center" />
+          <button onClick={() => pass === ADMIN_PASS && setIsAuthenticated(true)} className="block mx-auto text-pink-500 text-xs">COMMENCE</button>
         </div>
       </div>
     );
@@ -87,20 +101,20 @@ export default function AdminPortal() {
       <div className="grid gap-4">
         {registrations.map((reg) => (
           <div key={reg.id} className={`p-6 rounded-3xl border flex flex-col md:flex-row justify-between items-center gap-4 ${reg.status === 'approved' ? 'bg-green-50' : 'bg-white shadow-sm'}`}>
-            <div>
-              <h3 className="font-bold text-lg">{reg.name} <span className="text-xs font-normal text-gray-500 italic">({reg.batch})</span></h3>
-              <p className="text-xs text-gray-400 font-mono">{reg.email} | {reg.phone}</p>
-              <p className="mt-2 font-black text-blue-600 uppercase tracking-widest">{reg.trxId}</p>
+            <div className="flex-1">
+              <h3 className="font-bold text-lg">{reg.name} <span className="text-xs font-normal text-gray-400 italic">({reg.school})</span></h3>
+              <p className="text-xs text-gray-500 font-mono">{reg.email} | {reg.phone}</p>
+              <p className="mt-2 font-black text-pink-600 uppercase tracking-widest">TrxID: {reg.trxId}</p>
             </div>
             
-            <div className="flex gap-2">
+            <div className="flex items-center gap-4">
               {reg.status === 'pending' && (
                 <>
-                  <button onClick={() => handleApprove(reg)} className="bg-black text-white px-6 py-2 rounded-xl text-xs font-bold">APPROVE</button>
+                  <button onClick={() => handleApprove(reg)} className="bg-black text-white px-6 py-2 rounded-xl text-xs font-bold hover:bg-pink-600 transition-colors">APPROVE</button>
                   <button onClick={() => handleReject(reg)} className="bg-red-100 text-red-600 px-6 py-2 rounded-xl text-xs font-bold">REJECT</button>
                 </>
               )}
-              {reg.status === 'approved' && <span className="text-green-600 font-black text-xs">TICKET: {reg.ticketId}</span>}
+              {reg.status === 'approved' && <span className="text-green-600 font-black text-xs px-4 py-2 bg-green-100 rounded-lg">ID: {reg.ticketId}</span>}
               <button onClick={() => deleteDoc(doc(db, "registrations", reg.id))} className="text-gray-300 hover:text-red-500 px-2">X</button>
             </div>
           </div>
