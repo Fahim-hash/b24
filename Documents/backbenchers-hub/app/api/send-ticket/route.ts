@@ -4,11 +4,28 @@ import { jsPDF } from "jspdf";
 
 const resend = new Resend(process.env.RESEND_API_KEY);
 
+/**
+ * সার্ভার-সাইডে ইমেজ লোড করার জন্য হেল্পার ফাংশন।
+ * এটি URL থেকে ইমেজ ডাউনলোড করে Buffer এ রূপান্তর করে।
+ */
+async function fetchImageAsBuffer(url: string) {
+  try {
+    const response = await fetch(url);
+    if (!response.ok) throw new Error(`Could not fetch image: ${url}`);
+    const arrayBuffer = await response.arrayBuffer();
+    return Buffer.from(arrayBuffer);
+  } catch (error) {
+    console.error("Image Fetch Error:", error);
+    return null;
+  }
+}
+
 export async function POST(req: Request) {
   try {
     const body = await req.json();
     const { email, name, phone, school, board, batch, trxId, ticketId, status, reason } = body;
 
+    // --- APPROVAL LOGIC ---
     if (status === 'approved') {
       const doc = new jsPDF({
         orientation: "landscape",
@@ -16,49 +33,43 @@ export async function POST(req: Request) {
         format: [600, 400]
       });
 
-      // --- PDF ডিজাইন ---
-      // ১. ব্যাকগ্রাউন্ড (পিওর ব্ল্যাক)
+      // ১. ব্যাকগ্রাউন্ড (Pure Black)
       doc.setFillColor(10, 10, 10);
       doc.rect(0, 0, 600, 400, 'F');
 
-      // ২. লোগো সেকশন (বামে পাশাপাশি)
-      try {
-        const relaxLogo = "https://syedfahimmuddasir.bro.bd/r24-logo.png"; 
-        const b24Logo = "https://syedfahimmuddasir.bro.bd/b24-logo.png";
-        doc.addImage(relaxLogo, 'PNG', 30, 20, 35, 35);
-        doc.addImage(b24Logo, 'PNG', 75, 20, 35, 35);
-      } catch (e) {
-        console.log("Logos load failed");
-      }
+      // ২. লোগো ও কিউআর কোড লোডিং
+      // সার্ভার সাইডে ইমেজ অ্যাড করতে Buffer ব্যবহার করা বাধ্যতামূলক
+      const relaxLogoBuffer = await fetchImageAsBuffer("https://syedfahimmuddasir.bro.bd/r24-logo.png");
+      const b24LogoBuffer = await fetchImageAsBuffer("https://syedfahimmuddasir.bro.bd/b24-logo.png");
+      const qrUrl = `https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${ticketId}&color=ff005a&bgcolor=0a0a0a`;
+      const qrBuffer = await fetchImageAsBuffer(qrUrl);
 
-      // ৩. ফিক্সড আইকন (শেপ দিয়ে ড্রয়িং - যাতে গিবরিশ টেক্সট না আসে)
+      if (relaxLogoBuffer) doc.addImage(relaxLogoBuffer, 'PNG', 30, 20, 35, 35);
+      if (b24LogoBuffer) doc.addImage(b24LogoBuffer, 'PNG', 75, 20, 35, 35);
+      if (qrBuffer) doc.addImage(qrBuffer, 'PNG', 440, 115, 115, 115);
+
+      // ৩. আইকন ড্রয়িং (শেপ ব্যবহার করা হয়েছে যাতে ফন্ট এরর না আসে)
       doc.setDrawColor(255, 0, 90); 
       doc.setLineWidth(2.5);
-      // Circle
+      // Circle (○)
       doc.circle(480, 37, 10, 'S');
-      // Triangle
-      doc.line(510, 47, 520, 27);
-      doc.line(520, 27, 530, 47);
-      doc.line(530, 47, 510, 47);
-      // Square
+      // Triangle (△)
+      doc.line(510, 47, 520, 27); doc.line(520, 27, 530, 47); doc.line(530, 47, 510, 47);
+      // Square (□)
       doc.rect(550, 28, 18, 18, 'S');
 
-      // ৪. টাইটেল এবং ডিভাইডার
+      // ৪. টাইটেল এবং সেপারেটর
       doc.setFontSize(26);
       doc.setTextColor(255, 255, 255);
       doc.setFont("helvetica", "bold");
       doc.text("B24 PLAYER CARD", 30, 80);
-      
       doc.setDrawColor(255, 0, 90);
       doc.setLineWidth(1.5);
       doc.line(30, 92, 570, 92);
 
-      // ৫. ডাটা সেকশন (বামে)
+      // ৫. প্লেয়ার ইনফরমেশন
       doc.setFontSize(14);
       const startY = 130;
-      const col1 = 30;
-      const rowGap = 32;
-
       const details = [
         { label: "PLAYER NAME", value: String(name || 'N/A').toUpperCase() },
         { label: "PHONE", value: String(phone || 'N/A') },
@@ -71,21 +82,13 @@ export async function POST(req: Request) {
       details.forEach((item, index) => {
         doc.setTextColor(150, 150, 150);
         doc.setFontSize(9);
-        doc.text(item.label, col1, startY + (index * rowGap));
+        doc.text(item.label, 30, startY + (index * 32));
         doc.setTextColor(255, 255, 255);
         doc.setFontSize(13);
-        doc.text(item.value, col1, startY + (index * rowGap) + 12);
+        doc.text(item.value, 30, startY + (index * 32) + 12);
       });
 
-      // ৬. কিউআর কোড (ডানে)
-      const qrUrl = `https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=${ticketId}&color=ff005a&bgcolor=0a0a0a`;
-      try {
-        doc.addImage(qrUrl, 'PNG', 440, 115, 115, 115);
-      } catch (e) {
-        console.log("QR failed");
-      }
-
-      // ৭. টিকেট আইডি বক্স (QR এর নিচে)
+      // ৬. টিকেট আইডি বক্স
       doc.setFillColor(255, 0, 90);
       doc.rect(410, 245, 170, 45, 'F');
       doc.setTextColor(255, 255, 255);
@@ -93,7 +96,7 @@ export async function POST(req: Request) {
       doc.setFont("helvetica", "bold");
       doc.text(`#${ticketId}`, 495, 273, { align: "center" });
 
-      // ৮. ফুটার
+      // ৭. ফুটার
       doc.setTextColor(60, 60, 60);
       doc.setFontSize(8);
       doc.text("GEN-ID: RELAX-STUDIO-ALPHA-6 // SECURED BY ODF MEDIA", 30, 385);
@@ -129,6 +132,7 @@ export async function POST(req: Request) {
       return NextResponse.json({ success: true });
     } 
     
+    // --- REJECTION LOGIC ---
     else if (status === 'rejected') {
       const rejectHtml = `
         <div style="background-color: #0a0a0a; color: #ffffff; padding: 40px; text-align: center; font-family: sans-serif;">
