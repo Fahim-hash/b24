@@ -76,7 +76,7 @@ export async function POST(req: Request) {
 
       // ৬. ইমেইল পাঠানো (এপ্রুভড)
       await resend.emails.send({
-        from: 'B24 Reunion <onboarding@resend.dev>', // টেস্টের জন্য এটা ফিক্সড রাখো
+        from: 'B24 Reunion <onboarding@backbenchers24.pro.bd>', // টেস্টের জন্য এটা ফিক্সড রাখো
         to: email,
         subject: `Your Player Invitation: #${ticketId}`,
         html: `<p>Greetings <b>${name}</b>, your payment for BackBencher's 24 Mega-Reunion is verified. Find your dossier attached.</p>`,
@@ -88,7 +88,7 @@ export async function POST(req: Request) {
     
     else if (status === 'rejected') {
       await resend.emails.send({
-        from: 'B24 Support <onboarding@resend.dev>',
+        from: 'B24 Support <info@backbenchers24.pro.bd>',
         to: email,
         subject: 'Registration Status Update',
         html: `<div style="font-family: sans-serif; border: 1px solid #ff005a; padding: 20px; border-radius: 10px;">
