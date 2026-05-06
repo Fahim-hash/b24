@@ -1,84 +1,142 @@
-import { Resend } from 'resend';
-import { NextResponse } from 'next/server';
-import { jsPDF } from "jspdf";
+"use client";
 
-const resend = new Resend('re_USBt3RXV_Ma64Cp2CLLSZoDCyREukNz2n');
+import React, { useEffect, useState } from 'react';
+import { db } from '@/lib/firebase';
+import { collection, query, onSnapshot, doc, updateDoc, deleteDoc } from 'firebase/firestore';
+import * as XLSX from 'xlsx';
 
-export async function POST(req: Request) {
-  const { email, name, phone, school, board, batch, trxId, ticketId, status } = await req.json();
+export default function AdminPortal() {
+  const [registrations, setRegistrations] = useState<any[]>([]);
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [pass, setPass] = useState('');
 
-  if (status === 'approved') {
-    const doc = new jsPDF({
-      orientation: "landscape",
-      unit: "px",
-      format: [600, 400] // তথ্য বেশি তাই হাইট একটু বাড়ানো হয়েছে
+  const ADMIN_PASS = "Fahim@2026"; //
+
+  useEffect(() => {
+    if (!isAuthenticated) return;
+    const q = query(collection(db, "registrations"));
+    const unsubscribe = onSnapshot(q, (snapshot) => {
+      setRegistrations(snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() })));
     });
+    return () => unsubscribe();
+  }, [isAuthenticated]);
 
-    // ১. ব্যাকগ্রাউন্ড (কালো)
-    doc.setFillColor(0, 0, 0);
-    doc.rect(0, 0, 600, 400, 'F');
+  // পেমেন্ট অ্যাপ্রুভ এবং ইমেইল সেন্ডিং
+  const handleApprove = async (reg: any) => {
+    const ticketId = `B24-${Math.random().toString(36).substr(2, 9).toUpperCase()}`;
+    try {
+      // ১. ডাটাবেজ আপডেট
+      await updateDoc(doc(db, "registrations", reg.id), { 
+        status: "approved", 
+        ticketId: ticketId 
+      });
 
-    // ২. লোগো সেকশন (বামে পাশাপাশি সমান্তরাল)
-    // লোগোর Base64 এখানে বসাবে
-    const logoSize = 40;
-    doc.addImage("BASE64_RELAX_STUDIO", 'PNG', 20, 20, logoSize, logoSize); 
-    doc.addImage("BASE64_B24_LOGO", 'PNG', 70, 20, logoSize, logoSize);
+      // ২. ইমেইল পাঠানোর API কল
+      const response = await fetch('/api/send-ticket', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ 
+          email: reg.email, 
+          name: reg.name, 
+          phone: reg.phone,
+          school: reg.school || 'WLFSC', //
+          board: reg.board || 'Dhaka',
+          batch: reg.batch || '2024', //
+          trxId: reg.trxId,
+          ticketId: ticketId, 
+          status: 'approved' 
+        }),
+      });
 
-    // ৩. স্কুইড গেম আইকন (ডানে)
-    doc.setTextColor(255, 0, 90); // পিঙ্ক (#FF005A)
-    doc.setFontSize(35);
-    doc.text("○  △  □", 460, 50);
+      if (response.ok) {
+        alert(`Approved! Ticket ID: ${ticketId} and Email Sent.`);
+      } else {
+        alert("Approved in DB, but Email API failed.");
+      }
+    } catch (err) {
+      alert("Approval failed. Check console.");
+      console.error(err);
+    }
+  };
 
-    // ৪. টিকেটের শিরোনাম
-    doc.setDrawColor(255, 0, 90);
-    doc.line(20, 75, 580, 75); // ডিভাইডার
-    doc.setFontSize(20);
-    doc.setTextColor(255, 255, 255);
-    doc.text("PARTICIPANT DOSSIER", 20, 100);
+  // পেমেন্ট রিজেক্ট এবং নোটিফিকেশন সেন্ডিং
+  const handleReject = async (reg: any) => {
+    const reason = prompt("Reject করার কারণ লিখুন (যেমন: Invalid TrxID):");
+    if (!reason) return;
 
-    // ৫. এ টু জেড ইনফরমেশন সেকশন
-    doc.setFontSize(12);
-    const startY = 130;
-    const lineHeight = 20;
+    try {
+      await updateDoc(doc(db, "registrations", reg.id), { 
+        status: "rejected", 
+        rejectReason: reason 
+      });
+      
+      await fetch('/api/send-ticket', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ 
+          email: reg.email, 
+          name: reg.name, 
+          reason: reason, 
+          status: 'rejected' 
+        }),
+      });
+      alert("Rejected email sent.");
+    } catch (err) {
+      console.error(err);
+      alert("Rejection failed.");
+    }
+  };
 
-    const info = [
-      { label: "NAME", value: name.toUpperCase() },
-      { label: "PHONE", value: phone },
-      { label: "EMAIL", value: email },
-      { label: "INSTITUTION", value: school.toUpperCase() },
-      { label: "BOARD", value: board },
-      { label: "SSC BATCH", value: batch },
-      { label: "TRANSACTION ID", value: trxId.toUpperCase() },
-      { label: "TICKET ID", value: `#${ticketId}` }
-    ];
+  const exportToExcel = () => {
+    const worksheet = XLSX.utils.json_to_sheet(registrations);
+    const workbook = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(workbook, worksheet, "Registrations");
+    XLSX.writeFile(workbook, "BackBenchers_Registrations.xlsx");
+  };
 
-    info.forEach((item, index) => {
-      doc.setTextColor(255, 0, 90); // লেবেল পিঙ্ক
-      doc.text(`${item.label}:`, 20, startY + (index * lineHeight));
-      doc.setTextColor(255, 255, 255); // ভ্যালু সাদা
-      doc.text(String(item.value), 140, startY + (index * lineHeight));
-    });
-
-    // ৬. সিকিউরিটি নোট ও ওয়াটারমার্ক
-    doc.setFontSize(8);
-    doc.setTextColor(100, 100, 100);
-    doc.text("SECURITY PROTOCOL: DO NOT DUPLICATE THIS DOCUMENT.", 20, 360);
-    doc.setTextColor(255, 0, 90);
-    doc.setFontSize(80);
-    doc.text("□", 520, 380, { angle: 0, charSpace: 0 }); // ব্যাকগ্রাউন্ড সিম্বল
-
-    const pdfBuffer = Buffer.from(doc.output('arraybuffer'));
-
-    // ৭. ইমেইল পাঠানো
-    await resend.emails.send({
-      from: 'B24 Reunion <tickets@backbenchers24.pro.bd>',
-      to: email,
-      subject: `Your Player Invitation: #${ticketId}`,
-      html: `<p>Greetings <b>${name}</b>, your payment is verified. Your dossier is attached below.</p>`,
-      attachments: [{ filename: `B24_Ticket_${ticketId}.pdf`, content: pdfBuffer }]
-    });
-
-    return NextResponse.json({ success: true });
+  if (!isAuthenticated) {
+    return (
+      <div className="h-screen flex items-center justify-center bg-black text-white font-mono">
+        <div className="space-y-4 text-center">
+          <h2 className="text-xl tracking-tighter uppercase">Admin Access Required</h2>
+          <input type="password" placeholder="Enter Access Key" className="bg-transparent border-b border-white/20 p-2 outline-none text-center"
+            onChange={(e) => setPass(e.target.value)} />
+          <button onClick={() => pass === ADMIN_PASS && setIsAuthenticated(true)} className="block mx-auto text-pink-500 text-xs mt-4">COMMENCE</button>
+        </div>
+      </div>
+    );
   }
-  return NextResponse.json({ error: "Invalid status" });
+
+  return (
+    <div className="p-8 font-sans max-w-6xl mx-auto">
+      <div className="flex justify-between items-center mb-10">
+        <h1 className="text-3xl font-black italic">B24 CONTROL CENTER</h1>
+        <button onClick={exportToExcel} className="bg-green-600 text-white px-6 py-2 rounded-full font-bold text-sm">Download Excel</button>
+      </div>
+
+      <div className="grid gap-4">
+        {registrations.map((reg) => (
+          <div key={reg.id} className={`p-6 rounded-3xl border flex flex-col md:flex-row justify-between items-center gap-4 ${reg.status === 'approved' ? 'bg-green-50' : 'bg-white shadow-sm'}`}>
+            <div className="flex-1">
+              <h3 className="font-bold text-lg">{reg.name} <span className="text-xs font-normal text-gray-400">({reg.batch})</span></h3>
+              <p className="text-xs text-gray-500 font-mono">{reg.email} | {reg.phone}</p>
+              <p className="mt-2 font-black text-pink-600 uppercase tracking-widest">TrxID: {reg.trxId}</p>
+            </div>
+            
+            <div className="flex gap-2">
+              {reg.status === 'pending' && (
+                <>
+                  <button onClick={() => handleApprove(reg)} className="bg-black text-white px-6 py-2 rounded-xl text-xs font-bold hover:bg-pink-600 transition-colors">APPROVE</button>
+                  <button onClick={() => handleReject(reg)} className="bg-red-100 text-red-600 px-6 py-2 rounded-xl text-xs font-bold">REJECT</button>
+                </>
+              )}
+              {reg.status === 'approved' && <span className="text-green-600 font-black text-xs px-4 py-2 bg-green-100 rounded-lg">TICKET: {reg.ticketId}</span>}
+              {reg.status === 'rejected' && <span className="text-red-600 font-bold text-xs">REJECTED</span>}
+              <button onClick={() => deleteDoc(doc(db, "registrations", reg.id))} className="text-gray-300 hover:text-red-500 px-2 ml-2">X</button>
+            </div>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
 }
