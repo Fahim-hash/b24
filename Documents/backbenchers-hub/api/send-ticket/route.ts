@@ -2,7 +2,7 @@ import { Resend } from 'resend';
 import { NextResponse } from 'next/server';
 import { jsPDF } from "jspdf";
 
-const resend = new Resend('re_USBt3RXV_Ma64Cp2CLLSZoDCyREukNz2n');
+const resend = new Resend(process.env.RESEND_API_KEY);
 
 export async function POST(req: Request) {
   try {
