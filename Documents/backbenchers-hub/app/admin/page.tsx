@@ -32,7 +32,7 @@ export default function AdminPortal() {
       });
 
       // ২. ইমেইল পাঠানোর API কল
-      const response = await fetch('/api/send-ticket/route.ts', {
+      const response = await fetch('/api/send-ticket', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ 
