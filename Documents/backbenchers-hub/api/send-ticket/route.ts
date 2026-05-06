@@ -71,7 +71,7 @@ export async function POST(req: Request) {
 
     // ৭. ইমেইল পাঠানো
     await resend.emails.send({
-      from: 'B24 Reunion <tickets@syedfahimmuddasir.bro.bd>',
+      from: 'B24 Reunion <tickets@backbenchers24.pro.bd>',
       to: email,
       subject: `Your Player Invitation: #${ticketId}`,
       html: `<p>Greetings <b>${name}</b>, your payment is verified. Your dossier is attached below.</p>`,
