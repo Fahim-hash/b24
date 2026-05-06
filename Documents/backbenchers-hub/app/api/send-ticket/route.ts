@@ -32,7 +32,7 @@ export async function POST(req: Request) {
         format: [600, 400]
       });
 
-      // ১. ব্যাকগ্রাউন্ড (Pure Black)
+      // ১. ব্যাকগ্রাউন্ড (Deep Black)
       doc.setFillColor(10, 10, 10);
       doc.rect(0, 0, 600, 400, 'F');
 
@@ -44,48 +44,43 @@ export async function POST(req: Request) {
       const qrBase64 = await fetchImageAsBase64(qrUrl);
 
       // লোগোর সাইজ ফিক্স (Aspect Ratio ঠিক রাখা হয়েছে)
-      // চওড়া (Width) বাড়ানো হয়েছে এবং উচ্চতা (Height) কমানো হয়েছে যাতে চ্যাপ্টা না লাগে
+      // দুইটা লোগো মিলে মোট ১৬০px গ্যাপসহ সেট করা হয়েছে
       if (relaxLogoBase64) doc.addImage(relaxLogoBase64, 'PNG', 30, 25, 75, 30, undefined, 'FAST');
-      if (b24LogoBase64) doc.addImage(b24LogoBase64, 'PNG', 115, 25, 75, 30, undefined, 'FAST');
+      if (b24LogoBase64) doc.addImage(b24LogoBase64, 'PNG', 110, 25, 75, 30, undefined, 'FAST');
       
-      // QR Code পজিশন
       if (qrBase64) doc.addImage(qrBase64, 'PNG', 430, 105, 130, 130, undefined, 'MEDIUM');
 
-      // ৩. স্কুইড গেম আইকন (○ △ □)
+      // ৩. ভেক্টর আইকন (○ △ □)
       doc.setDrawColor(255, 0, 90); 
       doc.setLineWidth(2.5);
       doc.circle(480, 37, 10, 'S'); 
       doc.line(510, 47, 520, 27); doc.line(520, 27, 530, 47); doc.line(530, 47, 510, 47); 
       doc.rect(550, 28, 18, 18, 'S'); 
 
-      // ৪. টাইটেল
-      doc.setFontSize(26);
-      doc.setTextColor(255, 255, 255);
-      doc.setFont("helvetica", "bold");
-      doc.text("B24 PLAYER CARD", 30, 85);
+      // ৪. ডিভাইডার (টাইটেল বাদ দেওয়া হয়েছে আপনার রিকোয়েস্ট অনুযায়ী)
       doc.setDrawColor(255, 0, 90);
       doc.setLineWidth(1.5);
-      doc.line(30, 95, 570, 95);
+      doc.line(30, 85, 570, 85);
 
       // ৫. ডাটা সেকশন
       doc.setFontSize(14);
-      const startY = 135;
+      const startY = 125;
       const details = [
-        { label: "PLAYER NAME", value: String(name || 'N/A').toUpperCase() },
-        { label: "PHONE", value: String(phone || 'N/A') },
+        { label: "PARTICIPANT NAME", value: String(name || 'N/A').toUpperCase() },
+        { label: "CONTACT NO", value: String(phone || 'N/A') },
         { label: "INSTITUTION", value: String(school || 'WLFSC').toUpperCase() },
         { label: "BOARD / BATCH", value: `${board || 'DHAKA'} / ${batch || '2024'}` },
         { label: "TRANSACTION ID", value: String(trxId || 'N/A').toUpperCase() },
-        { label: "STATUS", value: "VERIFIED & CONFIRMED" }
+        { label: "VERIFICATION STATUS", value: "CONFIRMED" }
       ];
 
       details.forEach((item, index) => {
         doc.setTextColor(150, 150, 150);
         doc.setFontSize(9);
-        doc.text(item.label, 30, startY + (index * 32));
+        doc.text(item.label, 30, startY + (index * 35));
         doc.setTextColor(255, 255, 255);
         doc.setFontSize(13);
-        doc.text(item.value, 30, startY + (index * 32) + 12);
+        doc.text(item.value, 30, startY + (index * 35) + 12);
       });
 
       // ৬. টিকেট আইডি বক্স
@@ -103,29 +98,61 @@ export async function POST(req: Request) {
 
       const pdfBuffer = Buffer.from(doc.output('arraybuffer'));
 
-      // --- ইমেইল ---
+      // --- প্রিমিয়াম ইমেইল টেমপ্লেট ---
+      const emailHtml = `
+        <div style="background-color: #050505; color: #ffffff; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; padding: 40px; text-align: center;">
+          <div style="max-width: 600px; margin: 0 auto; border: 1px solid #222; padding: 40px; border-radius: 12px; background: #0a0a0a;">
+            <div style="margin-bottom: 30px;">
+                <span style="color: #ff005a; font-size: 24px; letter-spacing: 8px;">○ △ □</span>
+            </div>
+            
+            <h1 style="color: #ffffff; font-size: 22px; font-weight: 300; letter-spacing: 2px; text-transform: uppercase; margin-bottom: 10px;">Access Granted</h1>
+            <div style="height: 1px; width: 50px; background: #ff005a; margin: 0 auto 30px auto;"></div>
+            
+            <p style="font-size: 16px; color: #aaa; line-height: 1.6; margin-bottom: 25px;">
+              Greetings, <strong>${name}</strong>. <br>
+              Your credentials for the <strong>BackBencher's 24 Mega-Reunion</strong> have been successfully verified. 
+            </p>
+
+            <div style="border: 1px dashed #333; padding: 20px; margin: 20px 0; border-radius: 8px;">
+               <p style="margin: 0; font-size: 12px; color: #666; text-transform: uppercase; letter-spacing: 1px;">Entry ID</p>
+               <h2 style="margin: 5px 0; font-size: 28px; color: #ff005a; font-family: monospace;">#${ticketId}</h2>
+            </div>
+
+            <p style="font-size: 14px; color: #888; margin-top: 30px;">
+              Your digital dossier is attached to this email. Please ensure you have it ready for scanning at the checkpoint.
+            </p>
+
+            <div style="margin-top: 40px; border-top: 1px solid #222; padding-top: 20px;">
+               <p style="font-size: 11px; color: #444; letter-spacing: 1px;">DIRECTED BY RELAXSTUDIO × ODF MEDIA</p>
+            </div>
+          </div>
+        </div>
+      `;
+
       await resend.emails.send({
         from: 'B24 Reunion <tickets@backbenchers24.pro.bd>', 
         to: email,
-        subject: `PLAYER DOSSIER: #${ticketId}`,
-        html: `<div style="background:#0a0a0a; color:#fff; padding:40px; text-align:center; font-family:sans-serif;">
-                <h1 style="color:#ff005a; letter-spacing:5px;">○ △ □</h1>
-                <h2>IDENTITY VERIFIED</h2>
-                <p>Welcome Player <strong>${name}</strong>. Your dossier is attached.</p>
-               </div>`,
+        subject: `[CONFIRMED] Dossier #${ticketId} - BackBencher's 24`,
+        html: emailHtml,
         attachments: [{ filename: `B24_Dossier_${ticketId}.pdf`, content: pdfBuffer }]
       });
 
       return NextResponse.json({ success: true });
     } 
     
-    // Rejection logic
     else if (status === 'rejected') {
       await resend.emails.send({
         from: 'B24 Support <info@backbenchers24.pro.bd>',
         to: email,
-        subject: 'B24 Registration Update',
-        html: `<div style="background:#000; color:#fff; padding:30px; text-align:center;"><h2>Verification Failed</h2><p>${reason}</p></div>`
+        subject: 'Update: Registration Status',
+        html: `
+          <div style="background-color: #0a0a0a; color: #fff; padding: 40px; font-family: sans-serif; text-align: center;">
+            <h2 style="color: #ff4d4d;">VERIFICATION FAILED</h2>
+            <p>Dear ${name}, we could not verify your registration for the following reason:</p>
+            <p style="background: #1a1a1a; padding: 15px; border-left: 4px solid #ff4d4d; display: inline-block;">${reason}</p>
+          </div>
+        `
       });
       return NextResponse.json({ success: true });
     }
