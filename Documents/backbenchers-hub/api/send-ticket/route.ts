@@ -76,7 +76,7 @@ export async function POST(req: Request) {
     // পেমেন্ট রিজেক্ট হলে নোটিফিকেশন পাঠানো
     else if (status === 'rejected') {
       await resend.emails.send({
-        from: 'B24 Support <support@backbenchers24.pro.bd>',
+        from: 'B24 Support <onboarding@resend.dev>',
         to: email,
         subject: 'Registration Status Update',
         html: `
