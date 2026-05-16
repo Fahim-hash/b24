@@ -1,21 +1,14 @@
 "use client";
 
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import { db } from '@/lib/firebase';
 import { collection, addDoc, serverTimestamp } from 'firebase/firestore';
 
-// কিছু ডেমো স্কুলের লিস্ট (এখানে তুমি আরও হাজার হাজার নাম যোগ করতে পারো)
-const BD_SCHOOLS = [
-  "Willes Little Flower School & College",
-  "Motijheel Ideal School & College",
-  "Viqarunnisa Noon School & College",
-  "Dhaka Residential Model College",
-  "St. Joseph Higher Secondary School",
-  "Holy Cross Girls' High School",
-  "Govt. Laboratory High School",
-  "Monipur High School",
-  "Rajuk Uttara Model College"
-];
+// স্কুল অবজেক্টের টাইপ ডেফিনিশন
+interface School {
+  school_name: string;
+  board: string;
+}
 
 const BOARDS = ["Dhaka", "Chittagong", "Rajshahi", "Comilla", "Barisal", "Sylhet", "Dinajpur", "Jessore", "Mymensingh", "Madrasah", "Technical"];
 const BATCHES = ["SSC 23", "SSC 24", "SSC 25"];
@@ -25,6 +18,7 @@ export default function RegistrationPage() {
   const [success, setSuccess] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
   const [showSuggestions, setShowSuggestions] = useState(false);
+  const [allSchools, setAllSchools] = useState<School[]>([]); // JSON ডেটা স্টোর করার স্টেট
 
   const [formData, setFormData] = useState({
     name: '',
@@ -36,11 +30,26 @@ export default function RegistrationPage() {
     trxId: ''
   });
 
-  // স্কুল সার্চ ফিল্টার
+  // public/data/schools.json থেকে ডেটা ফেচ করার ইফেক্ট
+  useEffect(() => {
+    fetch('/data/schools.json')
+      .then((res) => {
+        if (!res.ok) throw new Error("Failed to load schools data");
+        return res.json();
+      })
+      .then((data: School[]) => setAllSchools(data))
+      .catch((err) => console.error("Error loading schools JSON:", err));
+  }, []);
+
+  // বোর্ড অনুযায়ী এবং সার্চ টার্ম অনুযায়ী অপ্টিমাইজড ফিল্টারিং
   const filteredSchools = useMemo(() => {
     if (searchTerm.length < 3) return [];
-    return BD_SCHOOLS.filter(s => s.toLowerCase().includes(searchTerm.toLowerCase()));
-  }, [searchTerm]);
+    
+    return allSchools.filter(s => 
+      s.board && s.board.toLowerCase() === formData.board.toLowerCase() &&
+      s.school_name && s.school_name.toLowerCase().includes(searchTerm.toLowerCase())
+    );
+  }, [searchTerm, formData.board, allSchools]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -65,7 +74,7 @@ export default function RegistrationPage() {
       <div className="min-h-screen flex items-center justify-center bg-gray-50 p-6 font-sans">
         <div className="bg-white p-8 rounded-2xl shadow-xl text-center max-w-sm w-full border-t-4 border-green-500">
           <h1 className="text-2xl font-bold text-gray-800">অপেক্ষায় থাকুন!</h1>
-          <p className="text-gray-600 mt-2">আপনার তথ্য জমা হয়েছে। পেমেন্ট ভেরিফাই হলে {formData.email} ঠিকানায় টিকিট চলে যাবে।</p>
+          <p className="text-gray-600 mt-2">আপনার তথ্য জমা হয়েছে। পেমেন্ট ভেরিফাই হলে {formData.email} ঠিকানায় টিকিট চলে যাবে।</p>
         </div>
       </div>
     );
@@ -108,7 +117,10 @@ export default function RegistrationPage() {
             </div>
             <div>
               <label className="block text-xs font-bold uppercase text-gray-500 mb-2">Board</label>
-              <select className="input-box" onChange={(e) => setFormData({...formData, board: e.target.value})}>
+              <select className="input-box" value={formData.board} onChange={(e) => {
+                setFormData({...formData, board: e.target.value});
+                setSearchTerm(''); // বোর্ড চেঞ্জ করলে সার্চ টার্ম রিসেট হবে ক্লিয়ার এক্সপেরিয়েন্সের জন্য
+              }}>
                 {BOARDS.map(board => <option key={board} value={board}>{board}</option>)}
               </select>
             </div>
@@ -119,20 +131,21 @@ export default function RegistrationPage() {
             <label className="block text-xs font-bold uppercase text-gray-500 mb-2">School Name</label>
             <input required type="text" value={searchTerm} className="input-box" placeholder="স্কুলের নাম লিখুন..." 
               onFocus={() => setShowSuggestions(true)}
+              onBlur={() => setTimeout(() => setShowSuggestions(false), 200)} // ম্যাপে ক্লিক করার সময় দেয়ার জন্য সামান্য ডিলে
               onChange={(e) => setSearchTerm(e.target.value)} />
             
             {showSuggestions && filteredSchools.length > 0 && (
-              <div className="absolute z-50 w-full bg-white border border-gray-200 mt-1 rounded-xl shadow-2xl max-h-48 overflow-y-auto">
+              <div className="absolute z-50 w-full bg-white border border-gray-200 mt-1 rounded-xl shadow-2xl max-h-48 overflow-y-auto(সক্রোল)">
                 {filteredSchools.map((s, i) => (
                   <div key={i} className="px-4 py-3 hover:bg-indigo-50 cursor-pointer text-sm border-b border-gray-50"
-                    onClick={() => { setSearchTerm(s); setShowSuggestions(false); }}>
-                    {s}
+                    onClick={() => { setSearchTerm(s.school_name); setShowSuggestions(false); }}>
+                    {s.school_name}
                   </div>
                 ))}
               </div>
             )}
             {searchTerm.length >= 3 && filteredSchools.length === 0 && (
-              <p className="text-[10px] text-orange-500 mt-1">Note: School not in list? Continue typing to add manually.</p>
+              <p className="text-[10px] text-orange-500 mt-1">Note: School not found in {formData.board} board? Continue typing to add manually.</p>
             )}
           </div>
 
